@@ -2,6 +2,7 @@ import { Body, Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
 import { Post } from '@nestjs/common';
 import { CircuitBreaker } from './utils/circuitBreaker';
+import { CircuitBreakerDecorator } from './decorators/circuitbreaker.decorator';
 
 @Controller()
 export class AppController {
@@ -20,15 +21,14 @@ export class AppController {
       chance: 0.3
     };
 
-    this.makeHttpCall = new CircuitBreaker(this.appService.makeHttpCall.bind(this.appService), {name: 'makeHttpCall', defaultResponse: { success: false, message: 'Service temporarily unavailable' }});
+    this.makeHttpCall = new CircuitBreaker(
+      this.appService.makeHttpCall.bind(this.appService),
+      {name: 'makeHttpCall', defaultResponse: { success: false, message: 'Service temporarily unavailable' }}
+    );
   }
 
   @Get('call')
   makeExternalCall(): Promise<unknown> {
-    // get random number between 0 and 1
-    // if random number is less than chance, pass duration, else pass 0 as duration
-    // call makeHttpCall with duration and chance
-
     const random = Math.random();
     const duration = random < this.settings.chance ? this.settings.duration : 0;
     return this.makeHttpCall.request(duration);
@@ -43,5 +43,13 @@ export class AppController {
   @Get('stats')
   getStats(): Promise<unknown> {
     return this.breaker.toJSON();
+  }
+
+  @Get('callWithDecorator')
+  @CircuitBreakerDecorator({ timeout: 3000, errorThresholdPercentage: 50, resetTimeout: 10000 })
+  async makeExternalCallWithDecorator(): Promise<unknown> {
+    const random = Math.random();
+    const duration = random < this.settings.chance ? this.settings.duration : 0;
+    return this.appService.makeHttpCall(duration);
   }
 }
