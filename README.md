@@ -11,4 +11,4 @@ In this repo I have played around a bit with circuit breaking. I have implemente
 - 3. By far my favorite implementation at this moment is with the help of the decorator, created in the ```src/decorators/circuitbreaker.decorator.ts``` and then used as a decorater in both the app.controller.ts if you want to use it on controller level, but can also be used on service level. This has been done in the app.service.ts.
 
 ## Conclusion
-I would suggest to use decorators as they improve readability and are super easy to implement once the decorator itself has been created.
+In the future I'll use decorators as they improve readability and are super easy to implement once the decorator itself has been created.
