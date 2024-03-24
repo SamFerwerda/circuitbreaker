@@ -8,11 +8,10 @@ import { CircuitBreakerDecorator } from './decorators/circuitbreaker.decorator';
 export class AppController {
   private settings: { duration: number, chance: number };
   options: {
-    timeout: number; // If our function takes longer than 3 seconds, trigger a failure
-    errorThresholdPercentage: number; // When 50% of requests fail, trip the circuit
-    resetTimeout: number; // After 30 seconds, try again.
+    timeout: number; 
+    errorThresholdPercentage: number;
+    resetTimeout: number;
   };
-  breaker: any;
   makeHttpCall: any;
 
   constructor(private readonly appService: AppService) {
@@ -42,14 +41,22 @@ export class AppController {
 
   @Get('stats')
   getStats(): Promise<unknown> {
-    return this.breaker.toJSON();
+    return this.makeHttpCall.breaker.stats;
   }
 
+  // Implementing circuitbreakers with the help of decorators.
   @Get('callWithDecorator')
-  @CircuitBreakerDecorator({ timeout: 3000, errorThresholdPercentage: 50, resetTimeout: 10000 })
+  @CircuitBreakerDecorator({ timeout: 3000, errorThresholdPercentage: 5, resetTimeout: 10000, fallbackResponse: { success: false, message: 'Service temporarily unavailable' }})
   async makeExternalCallWithDecorator(): Promise<unknown> {
     const random = Math.random();
     const duration = random < this.settings.chance ? this.settings.duration : 0;
     return this.appService.makeHttpCall(duration);
+  }
+
+  @Get('callWithDecoratorInService')
+  async makeExternalCallWithDecoratorInService(): Promise<unknown> {
+    const random = Math.random();
+    const duration = random < this.settings.chance ? this.settings.duration : 0;
+    return this.appService.makeHttpCallWithDecorator(duration);
   }
 }

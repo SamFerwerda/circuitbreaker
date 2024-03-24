@@ -6,7 +6,7 @@ export class CircuitBreaker {
 
     private defaultOptions = {
         timeout: 3000,
-        errorThresholdPercentage: 1,
+        errorThresholdPercentage: 5,
         resetTimeout: 10000,
         defaultResponse: { message: 'Default response' },
     }
@@ -20,7 +20,6 @@ export class CircuitBreaker {
         this.breaker.on('open', () => console.log(`Circuit opened for ${this.name} for ${this.options.resetTimeout} ms`));
         this.breaker.on('halfOpen', () => console.log(`Circuit half open for ${this.name} until next request`));
         this.breaker.on('close', () => console.log(`Circuit close for ${this.name}`));
-
         return this;
     }
     
